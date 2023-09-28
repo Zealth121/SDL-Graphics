@@ -4,6 +4,11 @@
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_image.h>
 
+#define WINDOW_WIDTH (640)
+#define WINDOW_HEIGHT (480)
+
+#define SCROLL_SPEED (300)
+
 int main(){
 
     if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER) != 0){
@@ -14,7 +19,7 @@ int main(){
     SDL_Window* win = SDL_CreateWindow("Hello!", 
                                         SDL_WINDOWPOS_CENTERED,
                                         SDL_WINDOWPOS_CENTERED,
-                                        640, 480, 0);
+                                        WINDOW_WIDTH, WINDOW_HEIGHT, 0);
 
     if(!win){
         printf("Error creating window! %s\n", SDL_GetError());
@@ -50,13 +55,30 @@ int main(){
         return 1;
     }
 
-    SDL_RenderClear(rend);
+    SDL_Rect dest;
 
-    SDL_RenderCopy(rend, tex, NULL, NULL);
-    SDL_RenderPresent(rend);
+    SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
 
-    SDL_Delay(5000);
+    dest.x = (WINDOW_WIDTH - dest.w) / 2;
 
+    float y_pos = WINDOW_HEIGHT;
+
+    while (dest.y >= (WINDOW_HEIGHT/2 - dest.h/2)){
+        SDL_RenderClear(rend);
+
+        dest.y = (int) y_pos;
+
+        SDL_RenderCopy(rend, tex, NULL, &dest);
+        SDL_RenderPresent(rend);
+
+        y_pos -= (float) SCROLL_SPEED / 60;
+
+        SDL_Delay(1000/60);
+    }
+
+    SDL_Delay(2000);
+
+    SDL_DestroyTexture(tex);
     SDL_DestroyRenderer(rend);
     SDL_DestroyWindow(win);
     SDL_Quit();
