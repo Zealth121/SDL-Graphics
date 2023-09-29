@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sys/time.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
@@ -63,16 +64,24 @@ int main(){
 
     float x_pos = (WINDOW_WIDTH - dest.w) / 2;
     float y_pos = (WINDOW_HEIGHT - dest.h) / 2;
-    float x_vel = 1;
-    float y_vel = -1;
+    float x_vel = SPEED;
+    float y_vel = -SPEED;
 
     int up = 0;
     int down = 0;
     int left = 0;
     int right = 0;
 
+    struct timeval t1, t2;
+    double elapsedTime = 0;
+    double overlap = 0;
+
     int close_requested = 0;
     while (!close_requested){
+
+        elapsedTime += overlap;
+        overlap = 0;
+        gettimeofday(&t1, NULL);
 
         SDL_Event event;
         while (SDL_PollEvent(&event)){
@@ -89,18 +98,25 @@ int main(){
         SDL_RenderCopy(rend, tex, NULL, &dest);
         SDL_RenderPresent(rend);
 
-        x_pos += (float) (SPEED / 60) * x_vel;
-        y_pos += (float) (SPEED / 60) * y_vel;
+        x_pos += (float) x_vel / 60;
+        y_pos += (float) y_vel / 60;
 
         if (x_pos <= 0 || (x_pos + dest.w) >= WINDOW_WIDTH){
-            x_vel *= -1;
+            x_vel = -x_vel;
         }
 
         if (y_pos <= 0 || (y_pos + dest.h) >= WINDOW_HEIGHT){
-            y_vel *= -1;
+            y_vel = -y_vel;
         }
 
-        SDL_Delay(1000/60);
+        gettimeofday(&t2, NULL);
+        elapsedTime = (t1.tv_sec - t1.tv_sec) * 1000;
+        if (elapsedTime > 1000/60){
+            overlap = elapsedTime - 1000/60;
+            elapsedTime = 1000/60;
+        }
+
+        SDL_Delay((1000/60) - elapsedTime);
     }
 
     SDL_DestroyTexture(tex);
