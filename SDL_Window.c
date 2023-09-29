@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
@@ -62,16 +63,40 @@ int main(){
     dest.x = (WINDOW_WIDTH - dest.w) / 2;
 
     float y_pos = WINDOW_HEIGHT;
+    float x_pos = 0;
 
-    while (dest.y >= (WINDOW_HEIGHT/2 - dest.h/2)){
+    bool dirx = 1;
+    bool diry = 0;
+    int count = 0;
+    while(count < 20){
         SDL_RenderClear(rend);
 
         dest.y = (int) y_pos;
+        dest.x = (int) x_pos;
 
         SDL_RenderCopy(rend, tex, NULL, &dest);
         SDL_RenderPresent(rend);
 
-        y_pos -= (float) SCROLL_SPEED / 60;
+        if (!diry){
+            y_pos -= (float) SCROLL_SPEED / 60;
+        } else{
+            y_pos += (float) SCROLL_SPEED / 60;
+        }
+
+        if (!dirx){
+            x_pos -= (float) SCROLL_SPEED / 60;
+        } else{
+            x_pos += (float) SCROLL_SPEED / 60;
+        }
+
+        if ((y_pos <= 0 && diry == 0)|| ((y_pos+dest.h) >= WINDOW_HEIGHT && diry == 1)){
+            diry = !diry;
+            count++;
+        }
+        if ((x_pos <= 0 && dirx == 0) || ((x_pos+dest.w) >= WINDOW_WIDTH && dirx == 1)){
+            dirx = !dirx;
+            count++;
+        }
 
         SDL_Delay(1000/60);
     }
