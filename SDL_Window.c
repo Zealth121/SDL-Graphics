@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdbool.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
@@ -8,7 +7,7 @@
 #define WINDOW_WIDTH (640)
 #define WINDOW_HEIGHT (480)
 
-#define SCROLL_SPEED (300)
+#define SPEED (300)
 
 int main(){
 
@@ -59,49 +58,50 @@ int main(){
     SDL_Rect dest;
 
     SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
+    // dest.w /= 2;
+    // dest.h /= 2;
 
-    dest.x = (WINDOW_WIDTH - dest.w) / 2;
+    float x_pos = (WINDOW_WIDTH - dest.w) / 2;
+    float y_pos = (WINDOW_HEIGHT - dest.h) / 2;
+    float x_vel = 1;
+    float y_vel = -1;
 
-    float y_pos = WINDOW_HEIGHT;
-    float x_pos = 0;
+    int up = 0;
+    int down = 0;
+    int left = 0;
+    int right = 0;
 
-    bool dirx = 1;
-    bool diry = 0;
-    int count = 0;
-    while(count < 25){
+    int close_requested = 0;
+    while (!close_requested){
+
+        SDL_Event event;
+        while (SDL_PollEvent(&event)){
+            if (event.type == SDL_QUIT){
+                close_requested = 1;
+            }
+        }
+
         SDL_RenderClear(rend);
 
-        dest.y = (int) y_pos;
         dest.x = (int) x_pos;
+        dest.y = (int) y_pos;
 
         SDL_RenderCopy(rend, tex, NULL, &dest);
         SDL_RenderPresent(rend);
 
-        if (!diry){
-            y_pos -= (float) SCROLL_SPEED / 60;
-        } else{
-            y_pos += (float) SCROLL_SPEED / 60;
+        x_pos += (float) (SPEED / 60) * x_vel;
+        y_pos += (float) (SPEED / 60) * y_vel;
+
+        if (x_pos <= 0 || (x_pos + dest.w) >= WINDOW_WIDTH){
+            x_vel *= -1;
         }
 
-        if (!dirx){
-            x_pos -= (float) SCROLL_SPEED / 60;
-        } else{
-            x_pos += (float) SCROLL_SPEED / 60;
-        }
-
-        if ((y_pos <= 0 && diry == 0)|| ((y_pos+dest.h) >= WINDOW_HEIGHT && diry == 1)){
-            diry = !diry;
-            count++;
-        }
-        if ((x_pos <= 0 && dirx == 0) || ((x_pos+dest.w) >= WINDOW_WIDTH && dirx == 1)){
-            dirx = !dirx;
-            count++;
+        if (y_pos <= 0 || (y_pos + dest.h) >= WINDOW_HEIGHT){
+            y_vel *= -1;
         }
 
         SDL_Delay(1000/60);
     }
-
-    SDL_Delay(2000);
 
     SDL_DestroyTexture(tex);
     SDL_DestroyRenderer(rend);
