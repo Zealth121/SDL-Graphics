@@ -68,7 +68,7 @@ int main(){
     bool dirx = 1;
     bool diry = 0;
     int count = 0;
-    while(count < 20){
+    while(count < 25){
         SDL_RenderClear(rend);
 
         dest.y = (int) y_pos;
